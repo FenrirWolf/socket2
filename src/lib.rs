@@ -59,11 +59,11 @@
 #![doc(test(attr(deny(warnings))))]
 
 use std::fmt;
-#[cfg(not(target_os = "redox"))]
+#[cfg(not(any(target_os = "redox", target_os = "horizon")))]
 use std::io::IoSlice;
-#[cfg(not(target_os = "redox"))]
+#[cfg(not(any(target_os = "redox", target_os = "horizon")))]
 use std::marker::PhantomData;
-#[cfg(not(target_os = "redox"))]
+#[cfg(not(any(target_os = "redox", target_os = "horizon")))]
 use std::mem;
 use std::mem::MaybeUninit;
 use std::net::SocketAddr;
@@ -377,7 +377,7 @@ impl RecvFlags {
     ///
     /// On Unix this corresponds to the `MSG_TRUNC` flag.
     /// On Windows this corresponds to the `WSAEMSGSIZE` error code.
-    #[cfg(not(target_os = "espidf"))]
+    #[cfg(not(any(target_os = "espidf", target_os = "horizon")))]
     pub const fn is_truncated(self) -> bool {
         self.0 & sys::MSG_TRUNC != 0
     }
@@ -439,6 +439,7 @@ pub struct TcpKeepalive {
         target_os = "vita",
         target_os = "haiku",
     )))]
+    #[cfg_attr(target_os = "horizon", allow(dead_code))]
     interval: Option<Duration>,
     #[cfg(not(any(
         target_os = "openbsd",
@@ -450,6 +451,7 @@ pub struct TcpKeepalive {
         target_os = "vita",
         target_os = "haiku",
     )))]
+    #[cfg_attr(target_os = "horizon", allow(dead_code))]
     retries: Option<u32>,
 }
 
@@ -601,14 +603,14 @@ impl TcpKeepalive {
 ///
 /// This wraps `msghdr` on Unix and `WSAMSG` on Windows. Also see [`MsgHdrMut`]
 /// for the variant used by `recvmsg(2)`.
-#[cfg(not(target_os = "redox"))]
+#[cfg(not(any(target_os = "redox", target_os = "horizon")))]
 pub struct MsgHdr<'addr, 'bufs, 'control> {
     inner: sys::msghdr,
     #[allow(clippy::type_complexity)]
     _lifetimes: PhantomData<(&'addr SockAddr, &'bufs IoSlice<'bufs>, &'control [u8])>,
 }
 
-#[cfg(not(target_os = "redox"))]
+#[cfg(not(any(target_os = "redox", target_os = "horizon")))]
 impl<'addr, 'bufs, 'control> MsgHdr<'addr, 'bufs, 'control> {
     /// Create a new `MsgHdr` with all empty/zero fields.
     #[allow(clippy::new_without_default)]
@@ -658,7 +660,7 @@ impl<'addr, 'bufs, 'control> MsgHdr<'addr, 'bufs, 'control> {
     }
 }
 
-#[cfg(not(target_os = "redox"))]
+#[cfg(not(any(target_os = "redox", target_os = "horizon")))]
 impl<'name, 'bufs, 'control> fmt::Debug for MsgHdr<'name, 'bufs, 'control> {
     fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
         "MsgHdr".fmt(fmt)
@@ -669,7 +671,7 @@ impl<'name, 'bufs, 'control> fmt::Debug for MsgHdr<'name, 'bufs, 'control> {
 ///
 /// This wraps `msghdr` on Unix and `WSAMSG` on Windows. Also see [`MsgHdr`] for
 /// the variant used by `sendmsg(2)`.
-#[cfg(not(target_os = "redox"))]
+#[cfg(not(any(target_os = "redox", target_os = "horizon")))]
 pub struct MsgHdrMut<'addr, 'bufs, 'control> {
     inner: sys::msghdr,
     #[allow(clippy::type_complexity)]
@@ -680,7 +682,7 @@ pub struct MsgHdrMut<'addr, 'bufs, 'control> {
     )>,
 }
 
-#[cfg(not(target_os = "redox"))]
+#[cfg(not(any(target_os = "redox", target_os = "horizon")))]
 impl<'addr, 'bufs, 'control> MsgHdrMut<'addr, 'bufs, 'control> {
     /// Create a new `MsgHdrMut` with all empty/zero fields.
     #[allow(clippy::new_without_default)]
@@ -735,7 +737,7 @@ impl<'addr, 'bufs, 'control> MsgHdrMut<'addr, 'bufs, 'control> {
     }
 }
 
-#[cfg(not(target_os = "redox"))]
+#[cfg(not(any(target_os = "redox", target_os = "horizon")))]
 impl<'name, 'bufs, 'control> fmt::Debug for MsgHdrMut<'name, 'bufs, 'control> {
     fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
         "MsgHdrMut".fmt(fmt)
