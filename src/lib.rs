@@ -57,6 +57,8 @@
 #![cfg_attr(test, deny(warnings))]
 // Disallow warnings in examples.
 #![doc(test(attr(deny(warnings))))]
+#![cfg_attr(target_os = "horizon", feature(custom_test_frameworks))]
+#![cfg_attr(target_os = "horizon", test_runner(test_runner::run_gdb))]
 
 use std::fmt;
 #[cfg(not(any(target_os = "redox", target_os = "horizon")))]

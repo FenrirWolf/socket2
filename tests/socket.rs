@@ -14,7 +14,7 @@
 ))]
 use std::fs::File;
 use std::io;
-#[cfg(not(any(target_os = "redox", target_os = "vita")))]
+#[cfg(not(any(target_os = "redox", target_os = "vita", target_os = "horizon")))]
 use std::io::IoSlice;
 use std::io::Read;
 use std::io::Write;
@@ -22,7 +22,7 @@ use std::io::Write;
 use std::mem::MaybeUninit;
 use std::mem::{self};
 use std::net::{Ipv4Addr, SocketAddr, SocketAddrV4, TcpStream};
-#[cfg(not(any(target_os = "redox", target_os = "vita")))]
+#[cfg(not(any(target_os = "redox", target_os = "vita", target_os = "horizon")))]
 use std::net::{Ipv6Addr, SocketAddrV6};
 #[cfg(all(
     feature = "all",
@@ -53,11 +53,20 @@ use std::{env, fs};
 #[cfg(windows)]
 use windows_sys::Win32::Foundation::{GetHandleInformation, HANDLE_FLAG_INHERIT};
 
-#[cfg(not(any(target_os = "redox", target_os = "vita")))]
+#[cfg(not(any(target_os = "redox", target_os = "vita", target_os = "horizon")))]
 use socket2::MaybeUninitSlice;
 #[cfg(not(target_os = "vita"))]
 use socket2::TcpKeepalive;
 use socket2::{Domain, Protocol, SockAddr, Socket, Type};
+
+#[cfg(target_os = "horizon")]
+#[test]
+fn call_shim_3ds_to_make_the_linker_shut_up() {
+    let mut buf = [0; 0];
+    unsafe {
+        shim_3ds::getrandom(buf.as_mut_ptr().cast(), buf.len(), 0);
+    }
+}
 
 #[test]
 fn domain_for_address() {
@@ -637,7 +646,7 @@ fn out_of_band() {
 }
 
 #[test]
-#[cfg(not(any(target_os = "redox", target_os = "vita")))]
+#[cfg(not(any(target_os = "redox", target_os = "vita", target_os = "horizon")))]
 fn udp_peek_sender() {
     let (socket_a, socket_b) = udp_pair_unconnected();
 
@@ -652,7 +661,7 @@ fn udp_peek_sender() {
 }
 
 #[test]
-#[cfg(not(any(target_os = "redox", target_os = "vita")))]
+#[cfg(not(any(target_os = "redox", target_os = "vita", target_os = "horizon")))]
 fn send_recv_vectored() {
     let (socket_a, socket_b) = udp_pair_connected();
 
@@ -699,7 +708,7 @@ fn send_recv_vectored() {
 }
 
 #[test]
-#[cfg(not(any(target_os = "redox", target_os = "vita")))]
+#[cfg(not(any(target_os = "redox", target_os = "vita", target_os = "horizon")))]
 fn send_from_recv_to_vectored() {
     let (socket_a, socket_b) = udp_pair_unconnected();
     let addr_a = socket_a.local_addr().unwrap();
@@ -752,7 +761,7 @@ fn send_from_recv_to_vectored() {
 }
 
 #[test]
-#[cfg(not(any(target_os = "redox", target_os = "vita")))]
+#[cfg(not(any(target_os = "redox", target_os = "vita", target_os = "horizon")))]
 fn sendmsg() {
     let (socket_a, socket_b) = udp_pair_unconnected();
 
@@ -770,7 +779,7 @@ fn sendmsg() {
 }
 
 #[test]
-#[cfg(not(any(target_os = "redox", target_os = "vita")))]
+#[cfg(not(any(target_os = "redox", target_os = "vita", target_os = "horizon")))]
 fn recv_vectored_truncated() {
     let (socket_a, socket_b) = udp_pair_connected();
 
@@ -790,7 +799,7 @@ fn recv_vectored_truncated() {
 }
 
 #[test]
-#[cfg(not(any(target_os = "redox", target_os = "vita")))]
+#[cfg(not(any(target_os = "redox", target_os = "vita", target_os = "horizon")))]
 fn recv_from_vectored_truncated() {
     let (socket_a, socket_b) = udp_pair_unconnected();
     let addr_a = socket_a.local_addr().unwrap();
@@ -816,7 +825,7 @@ fn recv_from_vectored_truncated() {
 }
 
 /// Create a pair of non-connected UDP sockets suitable for unit tests.
-#[cfg(not(any(target_os = "redox", target_os = "vita")))]
+#[cfg(not(any(target_os = "redox", target_os = "vita", target_os = "horizon")))]
 fn udp_pair_unconnected() -> (Socket, Socket) {
     // Use ephemeral ports assigned by the OS.
     let unspecified_addr = SocketAddrV6::new(Ipv6Addr::LOCALHOST, 0, 0, 0);
@@ -844,7 +853,7 @@ fn udp_pair_unconnected() -> (Socket, Socket) {
 }
 
 /// Create a pair of connected UDP sockets suitable for unit tests.
-#[cfg(not(any(target_os = "redox", target_os = "vita")))]
+#[cfg(not(any(target_os = "redox", target_os = "vita", target_os = "horizon")))]
 fn udp_pair_connected() -> (Socket, Socket) {
     let (socket_a, socket_b) = udp_pair_unconnected();
 
@@ -1424,6 +1433,7 @@ test!(IPv4 tos, set_tos(96));
     target_os = "windows",
     target_os = "vita",
     target_os = "haiku",
+    target_os = "horizon",
 )))]
 test!(IPv4 recv_tos, set_recv_tos(true));
 
@@ -1438,7 +1448,8 @@ test!(IPv6 unicast_hops_v6, set_unicast_hops_v6(20));
     target_os = "dragonfly",
     target_os = "freebsd",
     target_os = "openbsd",
-    target_os = "vita"
+    target_os = "vita",
+    target_os = "horizon",
 )))]
 test!(IPv6 only_v6, set_only_v6(true));
 // IPv6 socket are already IPv6 only on FreeBSD and Windows.
@@ -1472,6 +1483,7 @@ test!(IPv6 tclass_v6, set_tclass_v6(96));
     target_os = "windows",
     target_os = "vita",
     target_os = "haiku",
+    target_os = "horizon",
 )))]
 test!(IPv6 recv_tclass_v6, set_recv_tclass_v6(true));
 
@@ -1498,6 +1510,7 @@ test!(IPv6 multicast_all_v6, set_multicast_all_v6(false));
     target_os = "redox",
     target_os = "solaris",
     target_os = "vita",
+    target_os = "horizon",
 )))]
 fn join_leave_multicast_v4_n() {
     let socket = Socket::new(Domain::IPV4, Type::DGRAM, None).unwrap();
@@ -1529,6 +1542,7 @@ fn join_leave_multicast_v4_n() {
     target_os = "redox",
     target_os = "fuchsia",
     target_os = "vita",
+    target_os = "horizon",
 )))]
 fn join_leave_ssm_v4() {
     let socket = Socket::new(Domain::IPV4, Type::DGRAM, None).unwrap();
